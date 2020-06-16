@@ -5,6 +5,7 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import { Icon } from 'react-native-elements';
 import LoginScreen from './LoginScreen';
 import ProductList from './ProductList';
+import Content from './Content';
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -25,6 +26,17 @@ export default function Main() {
               />),
             }}
             component={ProductList} />
+          <Tab.Screen name='Content'
+            options={{
+              tabBarLabel: 'Content',
+              tabBarIcon: ({ color }) => (<Icon
+                size={22}
+                name='sliders'
+                type='font-awesome'
+                color='pink'
+              />),
+            }}
+            component={Content} />
 
         </Tab.Navigator>
       </NavigationContainer>

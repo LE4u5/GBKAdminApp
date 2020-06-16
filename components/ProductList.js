@@ -1,19 +1,24 @@
-import React, { useReducer, useEffect, useState } from 'react';
-import { View, Text, FlatList, Alert } from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { ListItem, Icon, Button, Overlay, Image } from 'react-native-elements';
-import * as Reducer from './Reducer';
 import * as actions from './ActionCreators';
 import { StyleSheet } from 'react-native';
 import { baseURL } from '../baseURL';
 import ProductEdit from './ProductEditOverlay';
+import { ProductContext } from '../ProductContext';
 
 export default function ProductList(props) {
-    const [state, dispatch] = useReducer(Reducer.productReducer, { products: [] });
-    const [overlayState, setOverlayState] = useState({isVisibleOverlay: false, id: null});
 
-    const toggleOverlay = (id) => setOverlayState({isVisibleOverlay: !overlayState.isVisibleOverlay, id: id});
-    
-    useEffect(() => actions.fetchProducts(dispatch), []);
+    const [pState, pDispatch] = useContext(ProductContext);
+    useEffect(() => actions.fetchProducts(pDispatch), []);
+
+    const [overlayState, setOverlayState] = useState({ isVisibleOverlay: false, id: null });
+    const toggleOverlay = (id) => setOverlayState({
+        isVisibleOverlay: !overlayState.isVisibleOverlay,
+        id: id
+    });
+
+
 
     const renderItem = ({ item }) => {
         return (
@@ -33,7 +38,8 @@ export default function ProductList(props) {
                             'Are you sure you want to delete product? This will remove item from your webpage.',
                             [
                                 {
-                                    text: 'Ok'
+                                    text: 'Ok',
+                                    onPress: () => pDispatch(actions.deleteProduct(item.id))
                                 },
                                 {
                                     text: 'Cancel',
@@ -47,7 +53,9 @@ export default function ProductList(props) {
         );
     }
 
-    return (
+    const loadingRender = <View style={{ display: "flex", alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', backgroundColor: "#000" }}><ActivityIndicator size="large" color="#fff" /></View>;
+
+    const producrRender = (
         <View style={styles.container}>
             <Text style={styles.textStyle}>Products</Text>
             <Icon
@@ -59,7 +67,7 @@ export default function ProductList(props) {
             />
             <FlatList
                 style={{ borderTopColor: 'palevioletred', borderTopWidth: 1 }}
-                data={state.products}
+                data={pState.products}
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
             />
@@ -70,17 +78,17 @@ export default function ProductList(props) {
                 name='plus'
                 type='font-awesome'
                 color='black'
-                onPress={() => dispatch(actions.addProduct({ name: 'Ball', type: 'toy', price: '3.99' }))} 
+                onPress={() => pDispatch(actions.addProduct({ name: 'Ball', type: 'Toy', price: '3.99' }))}
             />
             <Overlay
                 isVisible={overlayState.isVisibleOverlay}
                 onBackdropPress={toggleOverlay}
-                overlayStyle={styles.overlay}
-            >
-                <ProductEdit product={state.products.filter(product => product.id === overlayState.id)[0]} />
+                overlayStyle={styles.overlay}>
+                <ProductEdit id={overlayState.id} toggle={toggleOverlay} />
             </Overlay>
-        </View>
-    );
+        </View>);
+
+    return pState.isLoading ? loadingRender : producrRender;
 }
 
 const styles = StyleSheet.create({
@@ -114,6 +122,8 @@ const styles = StyleSheet.create({
     },
     overlay: {
         width: '90%',
-        height: '70%'
+        height: '70%',
+        borderRadius: 25,
+        padding: 20
     }
 })
