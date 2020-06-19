@@ -12,6 +12,13 @@ export function productReducer(state, action){
             return {...state, isLoading: false, products: state.products.filter(product => (product.id !== action.payload))}
         case ActionTypes.LOADING_PRODUCT:
             return {...state, isLoading: true}
+        case ActionTypes.UPDATE_PRODUCT:
+            return {...state, isLoading: false, products: state.products.map(item => {
+                if(item.id === action.payload.id)
+                    return action.payload;
+                else
+                    return item;
+            })}
         default:
             return state;
     }

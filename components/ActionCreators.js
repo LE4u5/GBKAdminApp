@@ -16,15 +16,18 @@ export const deleteProduct = id => ({
     payload: id
 });
 
+export const updateProduct = product => ({
+    type: ActionTypes.UPDATE_PRODUCT,
+    payload: product
+});
+
 export const loadingProduct = () => ({
     type: ActionTypes.LOADING_PRODUCT
 });
 
-export const fetchProducts = (dispatch) => {
-    
+export const fetchProducts = (dispatch) => {  
     dispatch(loadingProduct);
 
-    console.log('fetching data');
     fetch(baseURL + 'products')
     .then(respons => respons.json())
     .then(data => dispatch(addProducts(data)))

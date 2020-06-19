@@ -18,7 +18,20 @@ export default function ProductList(props) {
         id: id
     });
 
-
+    const deleteProduct = (item) => Alert.alert(
+        'Delete',
+        'Are you sure you want to delete product? This will remove item from your webpage.',
+        [
+            {
+                text: 'Ok',
+                onPress: () => pDispatch(actions.deleteProduct(item.id))
+            },
+            {
+                text: 'Cancel',
+                style: 'cancel'
+            }
+        ]
+    );
 
     const renderItem = ({ item }) => {
         return (
@@ -33,21 +46,10 @@ export default function ProductList(props) {
                         name='trash'
                         type='font-awesome'
                         color='#eee'
-                        onPress={() => Alert.alert(
-                            'Delete',
-                            'Are you sure you want to delete product? This will remove item from your webpage.',
-                            [
-                                {
-                                    text: 'Ok',
-                                    onPress: () => pDispatch(actions.deleteProduct(item.id))
-                                },
-                                {
-                                    text: 'Cancel',
-                                    style: 'cancel'
-                                }
-                            ]
-                        )}
+                        onPress={() => deleteProduct(item)}
                     />}
+                    onLongPress={() => deleteProduct(item)}
+                    badge= { item.id >= 18 ? { status: "success"}: false}
                 />
             </View>
         );
@@ -70,6 +72,9 @@ export default function ProductList(props) {
                 data={pState.products}
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
+                ListFooterComponent={View}
+                ListFooterComponentStyle={{backgroundColor: 'palevioletred', height: 47}}
+                
             />
             <Icon
                 containerStyle={styles.addButton}
