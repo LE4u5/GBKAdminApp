@@ -25,6 +25,11 @@ export const loadingProduct = () => ({
     type: ActionTypes.LOADING_PRODUCT
 });
 
+export const addToNewList = (name) => ({
+    type: ActionTypes.ADD_TO_NEW,
+    payload: name
+});
+
 export const fetchProducts = (dispatch) => {  
     dispatch(loadingProduct);
 

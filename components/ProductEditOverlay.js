@@ -1,36 +1,41 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, View, Text, Switch, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, Switch, StyleSheet, Alert } from 'react-native';
 import { Image, Input, Button, Icon } from 'react-native-elements';
 import { baseURL } from '../baseURL';
 import { ProductContext } from '../ProductContext';
-import { updateProduct } from './ActionCreators';
+import { updateProduct, addProduct, addToNewList } from './ActionCreators';
 
 export default function ProductEdit(props) {
     const [pState, pDispatch] = useContext(ProductContext);
-    const product = pState.products.filter(item => item.id === props.id)[0];
+    let product = {}
+    if (props.id || (props.id === 0)) {
+        product = pState.products.filter(item => item.id === props.id)[0];
+    }
 
     const [formState, setFormState] = useState({
-        formToggle: true,
+        formToggle: props.id ? true : (props.id === 0) ? true : false,
         disableSave: true,
         product: {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            type: product.type,
-            catagory: product.catagory,
-            image: product.image,
-            sold_out: product.sold_out,
-            sale: product.sale,
-            sale_price: product.sale_price,
-            disable: product.disable,
-            options: product.options
+            id: props.id ? product.id : (props.id === 0) ? product.id : null,
+            name: props.id ? product.name : (props.id === 0) ? product.name : '',
+            description: props.id ? product.description : (props.id === 0) ? product.description : '',
+            price: props.id ? product.price : (props.id === 0) ? product.price : '',
+            type: props.id ? product.type : (props.id === 0) ? product.type : '',
+            catagory: props.id ? product.catagory : (props.id === 0) ? product.catagory : '',
+            image: props.id ? product.image : (props.id === 0) ? product.image : '',
+            sold_out: props.id ? product.sold_out : (props.id === 0) ? product.sold_out : false,
+            sale: props.id ? product.sale : (props.id === 0) ? product.sale : false,
+            sale_price: props.id ? product.sale_price : (props.id === 0) ? product.sale_price : '',
+            disable: props.id ? product.disable : (props.id === 0) ? product.disable : false,
+            options: props.id ? product.options : (props.id === 0) ? product.options : [],
         }
     });
 
     const saveForm = () => pDispatch(updateProduct(formState.product));
+    const addForm = () => pDispatch(addProduct(formState.product));
 
     const toggleForm = () => setFormState({ ...formState, formToggle: !formState.formToggle });
+    const toggleSave = () => setFormState({ ...state, disableSave: !formState.disableSave });
 
     return (
         <View style={styles.container}>
@@ -40,22 +45,35 @@ export default function ProductEdit(props) {
                     style={styles.image}
                 />
                 <Input label='Name' value={formState.product.name}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, name: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, name: text } });
+                        console.log(JSON.stringify(formState.disableSave));                                     //Consol Log
+                    }}
                 />
                 <Input label='Description' multiline style={{ fontSize: 10 }} value={formState.product.description}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, description: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, description: text } });
+                    }}
                 />
                 <Input label='Price' value={formState.product.price}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, price: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, price: text } });
+                    }}
                 />
                 <Input label='Type' value={formState.product.type}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, type: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, type: text } });
+                    }}
                 />
                 <Input label='Catagory' value={formState.product.catagory}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, catagory: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, catagory: text } });
+                    }}
                 />
                 <Input label='Sale Price' value={formState.product.sale_price}
-                    disabled={formState.formToggle} onChangeText={text => setFormState({ ...formState, product: { ...formState.product, sale_price: text } })}
+                    disabled={formState.formToggle} onChangeText={text => {
+                        setFormState({ ...formState, disableSave: false, product: { ...formState.product, sale_price: text } });
+                    }}
                 />
                 <View style={styles.switchContainer}>
                     <Text style={styles.switchLabel}>Sale</Text>
@@ -64,7 +82,9 @@ export default function ProductEdit(props) {
                         thumbColor={formState.product.sale ? "palevioletred" : "#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
                         disabled={formState.formToggle}
-                        value={formState.product.sale} onValueChange={value => setFormState({ ...formState, product: { ...formState.product, sale: value } })}
+                        value={formState.product.sale} onValueChange={value => {
+                            setFormState({ ...formState, disableSave: false, product: { ...formState.product, sale: value } });
+                        }}
                     />
                 </View>
                 <View style={styles.switchContainer}>
@@ -74,7 +94,9 @@ export default function ProductEdit(props) {
                         thumbColor={formState.product.sold_out ? "palevioletred" : "#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
                         disabled={formState.formToggle}
-                        value={formState.product.sold_out} onValueChange={value => setFormState({ ...formState, product: { ...formState.product, sold_out: value } })}
+                        value={formState.product.sold_out} onValueChange={value => {
+                            setFormState({ ...formState, disableSave: false, product: { ...formState.product, sold_out: value } });
+                        }}
                     />
                 </View>
                 <View style={styles.switchContainer}>
@@ -84,7 +106,9 @@ export default function ProductEdit(props) {
                         thumbColor={formState.product.disable ? "palevioletred" : "#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
                         disabled={formState.formToggle}
-                        value={formState.product.disable} onValueChange={value => setFormState({ ...formState, product: { ...formState.product, disable: value } })}
+                        value={formState.product.disable} onValueChange={value => {
+                            setFormState({ ...formState, disableSave: false, product: { ...formState.product, disable: value } });
+                        }}
                     />
                 </View>
             </ScrollView>
@@ -98,18 +122,30 @@ export default function ProductEdit(props) {
                     containerStyle={{ width: 100, margin: 0 }}
                 />
                 <Button
-                    onPress={saveForm, props.toggle}
-                    title='Save'
+                    onPress={() => {
+                        
+                        if(pState.newProduct.includes(formState.product.name)){
+                            Alert.alert('Invalid','You Already added an item with same name. Try a different product name',[{text: 'Ok', style: "cancel"}])
+                        } else {
+                            props.id ? saveForm() : (props.id === 0) ? saveForm() : addForm();
+                            props.id ? null : (props.id === 0 ) ? null : pDispatch(addToNewList(formState.product.name));
+                            props.toggle();
+                        }
+                        
+                        console.log(pState.newProduct)                                  //Console Log
+                        console.log(formState.product.name)
+                    }}
+                    title={props.id ? 'Save' : (props.id === 0) ? 'Save' : 'Add'}
                     type='outline'
                     titleStyle={{ color: 'black' }}
                     buttonStyle={{ borderColor: 'black', borderWidth: 2 }}
                     containerStyle={{ width: 100, margin: 0 }}
-                    disabled
+                    disabled={formState.disableSave}
                 />
                 <Icon
                     name='edit'
                     type='font-awesome'
-                    color='#000'
+                    color={formState.formToggle ? 'lightgrey' : 'black'}
                     onPress={() => toggleForm()}
                     size={32}
                 />

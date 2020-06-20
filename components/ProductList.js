@@ -1,29 +1,43 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { View, Text, FlatList, Alert, ActivityIndicator, Animated } from 'react-native';
 import { ListItem, Icon, Button, Overlay, Image } from 'react-native-elements';
 import * as actions from './ActionCreators';
 import { StyleSheet } from 'react-native';
 import { baseURL } from '../baseURL';
 import ProductEdit from './ProductEditOverlay';
 import { ProductContext } from '../ProductContext';
+import * as Animatable from 'react-native-animatable';
 
 export default function ProductList(props) {
 
-    const [pState, pDispatch] = useContext(ProductContext);
-    useEffect(() => actions.fetchProducts(pDispatch), []);
+    const [pState, pDispatch] = useContext(ProductContext); //sets up state for product list
+    useEffect(() => actions.fetchProducts(pDispatch), []);  //fetches list of products from server
 
-    const [overlayState, setOverlayState] = useState({ isVisibleOverlay: false, id: null });
-    const toggleOverlay = (id) => setOverlayState({
-        isVisibleOverlay: !overlayState.isVisibleOverlay,
-        id: id
+    const [state, setState] = useState({                    //state to manage overlay for product info
+        overlay: { isVisible: false, id: null }
     });
 
-    const deleteProduct = (item) => Alert.alert(
+    const toggleOverlay = (id) => setState({
+        ...state,
+        overlay: {
+            id: id ? id : (id === 0) ? id : null,
+            isVisible: !state.overlay.isVisible
+        }
+    });
+
+    const addToNew = name => {
+        if (name)
+            setState({ ...state, newProduct: [...state.newProduct, name] })
+        else
+            console.log('Invalid name for new item')
+    };
+
+    const deleteProduct = (item) => Alert.alert( //displays alert to delete product from list
         'Delete',
         'Are you sure you want to delete product? This will remove item from your webpage.',
         [
             {
-                text: 'Ok',
+                text: 'Delete',
                 onPress: () => pDispatch(actions.deleteProduct(item.id))
             },
             {
@@ -33,7 +47,7 @@ export default function ProductList(props) {
         ]
     );
 
-    const renderItem = ({ item }) => {
+    const renderItem = ({ item }) => { //render item for flat list. renders once for each item in list
         return (
             <View>
                 <ListItem
@@ -49,7 +63,7 @@ export default function ProductList(props) {
                         onPress={() => deleteProduct(item)}
                     />}
                     onLongPress={() => deleteProduct(item)}
-                    badge= { item.id >= 18 ? { status: "success"}: false}
+                    badge={pState.newProduct.includes(item.name) ? { status: "success" } : null}
                 />
             </View>
         );
@@ -73,9 +87,10 @@ export default function ProductList(props) {
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
                 ListFooterComponent={View}
-                ListFooterComponentStyle={{backgroundColor: 'palevioletred', height: 47}}
-                
+                ListFooterComponentStyle={{ backgroundColor: 'palevioletred', height: 47 }}
+
             />
+            <View>
             <Icon
                 containerStyle={styles.addButton}
                 raised
@@ -83,13 +98,14 @@ export default function ProductList(props) {
                 name='plus'
                 type='font-awesome'
                 color='black'
-                onPress={() => pDispatch(actions.addProduct({ name: 'Ball', type: 'Toy', price: '3.99' }))}
+                onPress={() => toggleOverlay()}
             />
+            </View>
             <Overlay
-                isVisible={overlayState.isVisibleOverlay}
+                isVisible={state.overlay.isVisible}
                 onBackdropPress={toggleOverlay}
                 overlayStyle={styles.overlay}>
-                <ProductEdit id={overlayState.id} toggle={toggleOverlay} />
+                <ProductEdit id={state.overlay.id} toggle={toggleOverlay} />
             </Overlay>
         </View>);
 
@@ -109,16 +125,15 @@ const styles = StyleSheet.create({
     },
     textStyle: {
         marginHorizontal: 6,
-        fontSize: 20,
         fontWeight: '700',
         paddingBottom: 10,
-        textAlign: 'center'
-
+        textAlign: 'center',
+        fontSize: 20
     },
     addButton: {
         position: 'absolute',
-        bottom: 50,
-        right: 20,
+        bottom: 12,
+        right: 20
     },
     uploadButton: {
         position: 'absolute',
